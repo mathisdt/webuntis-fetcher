@@ -4,6 +4,11 @@ This project is modeled after the web application (by reverse engineering) and d
 **not** use a publicly documented and stable API. So it can break at any time - 
 whenever Untis decides to change their backend.
 
+## TODO
+
+- cancellations
+- changes in teacher, subject or room
+
 ## Getting Started
 
 1. Checkout this project to your computer (or just copy `main.py` and `config-template.ini`).
