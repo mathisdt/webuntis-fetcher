@@ -1,63 +1,11 @@
 import configparser
+import datetime
+import locale
 import logging
 import os
 import sys
-import datetime
-import locale
-import webuntis
+
 import requests
-
-
-def get_data(section_config):
-    with webuntis.Session(
-            username=section_config['username'],
-            password=section_config['password'],
-            server='neilo.webuntis.com',
-            school='KKS Hannover',
-            useragent='WebUntis Test'
-    ).login() as s:
-        # today = datetime.date.today()
-        # TODO temporary beause of christmas vacation:
-        today = datetime.date(2024, 1, 9)
-        monday = today - datetime.timedelta(days=today.weekday())
-        friday = monday + datetime.timedelta(days=4)
-
-        # klasse = s.klassen().filter(name=className)[0]
-        # tt = s.timetable(klasse=klasse, start=monday, end=friday)
-        student = s.get_student(fore_name=section_config['firstname'], surname=section_config['lastname'])
-        tt = s.timetable_extended(student=student, start=monday, end=friday)
-        table = tt.to_table()
-        for row in table:
-            start_time = row[0]
-            print(f'{start_time.strftime("%H:%M")} Uhr')
-            for day in row[1]:
-                date = day[0]
-                periods = day[1]
-                if periods:
-                    if len(periods) == 1 and next(iter(periods)).code is None:
-                        normal = next(iter(periods))
-                        print(
-                            f' - {date.strftime("%Y-%m-%d")} {normal.subjects} ({teacher_desc(normal)}) @ {normal.rooms}')
-                    elif len(periods) == 1 and next(iter(periods)).code == "cancelled":
-                        cancelled = next(iter(periods))
-                        print(
-                            f' - NOT {date.strftime("%Y-%m-%d")} {cancelled.subjects} ({teacher_desc(cancelled)}) @ {cancelled.rooms}')
-                    elif len(periods) == 2:
-                        cancelled = next(filter(lambda x: x.code == "cancelled", periods), None)
-                        irregular = next(filter(lambda x: x.code == "irregular", periods), None)
-                        print(
-                            f' - {date.strftime("%Y-%m-%d")} NOT {cancelled.subjects} ({teacher_desc(cancelled)}) @ {cancelled.rooms}'
-                            f' BUT {irregular.subjects} ({teacher_desc(irregular)}) @ {irregular.rooms}')
-                else:
-                    print(
-                        f' - {date.strftime("%Y-%m-%d")} FREE')
-
-
-def teacher_desc(period):
-    teacher = ""
-    for te in period._data["te"]:
-        teacher = (teacher + " " + str(te["id"])).strip()
-    return teacher
 
 
 def get_element_name(elements: dict, element_type: int, element_id: int):
@@ -89,6 +37,15 @@ def get_element_id_list(elements: dict, element_type: int):
 
 def write(target, line):
     target.write(line + "\n")
+
+
+def get_next_key(base, this_key):
+    last_key = None
+    for key in base.keys():
+        if last_key == this_key:
+            return key
+        last_key = key
+    return None
 
 
 def get_data_direct(section_config, week_start_date, target):
@@ -229,15 +186,6 @@ def get_data_direct(section_config, week_start_date, target):
         write(target, "</tr>")
         block_start = not block_start
     write(target, "</table>")
-
-
-def get_next_key(base, this_key):
-    last_key = None
-    for key in base.keys():
-        if last_key == this_key:
-            return key
-        last_key = key
-    return None
 
 
 if __name__ == '__main__':

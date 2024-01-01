@@ -1,2 +1,1 @@
-webuntis>=0.1.22
 requests>=2.31.0
