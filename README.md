@@ -8,6 +8,7 @@ whenever Untis decides to change their backend.
 
 1. Checkout this project to your computer (or just copy `main.py` and `config-template.ini`).
 2. Copy `config-template.ini` to `config.ini` and edit it so it contains your data.
+   - The section names (inside the `[]`) are used as titles for the time tables.
    - The `server` field has to be set to whatever your school uses. You can see the server
      name in the browser address bar when you are logged in, it's everything up to the first `/`. 
    - The `school` field has to contain whatever Untis calls the school. You can look it up
