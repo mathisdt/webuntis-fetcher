@@ -4,6 +4,7 @@ import locale
 import logging
 import os
 import sys
+from typing import TextIO
 
 import requests
 
@@ -35,17 +36,26 @@ def get_element_id_list(elements: dict, element_type: int):
     return sorted(element_ids)
 
 
-def write(target, line):
+def write(target: TextIO, line: str):
     target.write(line + "\n")
 
 
-def get_next_key(base, this_key):
+def get_next_key(base: dict, this_key: datetime.time):
     last_key = None
     for key in base.keys():
         if last_key == this_key:
             return key
         last_key = key
     return None
+
+
+def add_entry(data_dict: dict, category: str, kind: str, element: str):
+    if category not in data_dict:
+        data_dict[category] = dict()
+    if kind in data_dict[category]:
+        data_dict[category][kind] = data_dict[category][kind] + ", " + element
+    else:
+        data_dict[category][kind] = element
 
 
 def get_data_direct(section_config, week_start_date, target):
@@ -113,37 +123,31 @@ def get_data_direct(section_config, week_start_date, target):
         teacher_ids = get_element_id_list(period["elements"], 2)
         subject_ids = get_element_id_list(period["elements"], 3)
         room_ids = get_element_id_list(period["elements"], 4)
-        periods_by_time[start_time][date] = dict()
+        if date not in periods_by_time[start_time]:
+            periods_by_time[start_time][date] = dict()
+        kind = "yes"
         if period["cellState"] == "EXAM":
             periods_by_time[start_time][date]["cell_class"] = "exam"
         elif period["cellState"] == "STANDARD":
             periods_by_time[start_time][date]["cell_class"] = "normal"
+        elif period["cellState"] in ("SHIFT", "SUBSTITUTION"):
+            periods_by_time[start_time][date]["cell_class"] = "change"
+        elif period["cellState"] == "CANCEL":
+            kind = "no"
+            if ("cell_class" not in periods_by_time[start_time][date]
+                    or not periods_by_time[start_time][date]["cell_class"] == "change"):
+                # we don't already have a "change" entry, so we may put "cancel" as cell class:
+                periods_by_time[start_time][date]["cell_class"] = "cancel"
         else:
             periods_by_time[start_time][date]["cell_class"] = "warn"
         for group_id in group_ids:
-            if "group" in periods_by_time[start_time][date]:
-                periods_by_time[start_time][date]["group"] = (periods_by_time[start_time][date]["group"] + ", "
-                                                              + get_element_name(elements, 1, group_id))
-            else:
-                periods_by_time[start_time][date]["group"] = get_element_name(elements, 1, group_id)
+            add_entry(periods_by_time[start_time][date], "group", kind, get_element_name(elements, 1, group_id))
         for teacher_id in teacher_ids:
-            if "teacher" in periods_by_time[start_time][date]:
-                periods_by_time[start_time][date]["teacher"] = (periods_by_time[start_time][date]["teacher"] + ", "
-                                                                + get_element_name(elements, 2, teacher_id))
-            else:
-                periods_by_time[start_time][date]["teacher"] = get_element_name(elements, 2, teacher_id)
+            add_entry(periods_by_time[start_time][date], "teacher", kind, get_element_name(elements, 2, teacher_id))
         for subject_id in subject_ids:
-            if "subject" in periods_by_time[start_time][date]:
-                periods_by_time[start_time][date]["subject"] = (periods_by_time[start_time][date]["subject"] + ", "
-                                                                + get_element_name(elements, 3, subject_id))
-            else:
-                periods_by_time[start_time][date]["subject"] = get_element_name(elements, 3, subject_id)
+            add_entry(periods_by_time[start_time][date], "subject", kind, get_element_name(elements, 3, subject_id))
         for room_id in room_ids:
-            if "room" in periods_by_time[start_time][date]:
-                periods_by_time[start_time][date]["room"] = (periods_by_time[start_time][date]["room"] + ", "
-                                                             + get_element_name(elements, 4, room_id))
-            else:
-                periods_by_time[start_time][date]["room"] = get_element_name(elements, 4, room_id)
+            add_entry(periods_by_time[start_time][date], "room", kind, get_element_name(elements, 4, room_id))
 
     group_string = f' ({section_config["class"]})' if "class" in section_config else ''
     write(target, f'''<h2>{section_config["firstname"]}{group_string}</h2>
@@ -175,18 +179,24 @@ def get_data_direct(section_config, week_start_date, target):
                         periods_by_time[next_start_time][date] = "ROWSPAN_APPLIED"
                 if "class" in section_config:
                     group_string = ""
-                    teacher_string = f' ({period["teacher"]})'
+                    teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
+                                     f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>'
                 else:
-                    group_string = f'{period["group"]} '
+                    group_string = f'<span class="spaceright">{period["group"]["yes"] if "yes" in period["group"] else ""}</span>' \
+                                   f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["group"] else ""}">{period["group"]["no"] if "no" in period["group"] else ""}</span>'
                     teacher_string = ""
                 write(target,
-                      f'<td class="centered {period["cell_class"]}"{row_span}>{group_string}{period["subject"]}{teacher_string}<br/><small>@ {period["room"]}</small></td>')
+                      f'<td class="centered {period["cell_class"]}"{row_span}>{group_string}'
+                      f'{period["subject"]["yes"] if "yes" in period["subject"] else ""}'
+                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["subject"] else ""}">{period["subject"]["no"] if "no" in period["subject"] else ""}</span>'
+                      f'{teacher_string}<br/>'
+                      f'<small>@ {period["room"]["yes"] if "yes" in period["room"] else ""}'
+                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["room"] else ""}">{period["room"]["no"] if "no" in period["room"] else ""}</span></small></td>')
             else:
                 write(target, "<td></td>")
         write(target, "</tr>")
         block_start = not block_start
     write(target, "</table>")
-
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
@@ -216,9 +226,14 @@ if __name__ == '__main__':
                                 .text_top { vertical-align: top }
                                 .centered { text-align: center; vertical-align: middle }
                                 .bleak { color: #999999; font-size: small }
-                                .normal { background-color: rgba(244, 159, 37, 0.7) }
-                                .exam { background-color: rgba(255, 237, 0, 0.7) }
-                                .warn { background-color: rgba(255, 50, 50, 0.7) }
+                                .no { text-decoration: line-through }
+                                .spaceleft { padding-left: 0.5em }
+                                .spaceright { padding-right: 0.5em }
+                                .normal { background-color: rgba(245, 160, 35, 0.7) }
+                                .exam { background-color: rgba(255, 235, 0, 0.7) }
+                                .change { background-color: rgba(200, 160, 210) }
+                                .cancel { background-color: rgba(195, 195, 195) }
+                                .warn { background-color: rgba(255, 50, 50) }
                                 </style>
                                 </head>
                                 <body>''')
@@ -226,9 +241,7 @@ if __name__ == '__main__':
             if section != 'DEFAULT':
                 # get_data(config[section])
 
-                # today = datetime.date.today()
-                # TODO temporary beause of christmas vacation:
-                today = datetime.date(2024, 1, 10)
+                today = datetime.date.today()
                 monday = today - datetime.timedelta(days=today.weekday())
                 get_data_direct(config[section], monday, target_file)
 
