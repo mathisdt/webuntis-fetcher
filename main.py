@@ -199,6 +199,7 @@ def get_data_direct(section_config, week_start_date, target):
         block_start = not block_start
     write(target, "</table>")
 
+
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -217,27 +218,29 @@ if __name__ == '__main__':
 
     with open(outfile, "w") as target_file:
         write(target_file, '''<html>
-                                <head>
-                                <title>Stundenplan</title>
-                                <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-                                <style>
-                                .width1 { width: 120px }
-                                .width2 { width: 150px }
-                                .height2 { height: 47px }
-                                .text_top { vertical-align: top }
-                                .centered { text-align: center; vertical-align: middle }
-                                .bleak { color: #999999; font-size: small }
-                                .no { text-decoration: line-through }
-                                .spaceleft { padding-left: 0.5em }
-                                .spaceright { padding-right: 0.5em }
-                                .normal { background-color: rgba(245, 160, 35, 0.7) }
-                                .exam { background-color: rgba(255, 235, 0, 0.7) }
-                                .change { background-color: rgba(200, 160, 210) }
-                                .cancel { background-color: rgba(195, 195, 195) }
-                                .warn { background-color: rgba(255, 50, 50) }
-                                </style>
-                                </head>
-                                <body>''')
+                           <head>
+                           <title>Stundenplan</title>
+                           <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                           <style>
+                           .width1 { width: 120px }
+                           .width2 { width: 150px }
+                           .height2 { height: 47px }
+                           .text_top { vertical-align: top }
+                           .centered { text-align: center; vertical-align: middle }
+                           .bleak { color: #999999; font-size: small }
+                           .smallbold { font-size: small; font-weight: bold }
+                           .no { text-decoration: line-through }
+                           .spaceleft { padding-left: 0.5em }
+                           .spaceright { padding-right: 0.5em }
+                           .normal { background-color: rgba(245, 160, 35, 0.7) }
+                           .exam { background-color: rgba(255, 235, 0, 0.7) }
+                           .change { background-color: rgba(200, 160, 210) }
+                           .cancel { background-color: rgba(195, 195, 195) }
+                           .warn { background-color: rgba(255, 50, 50) }
+                           </style>
+                           </head>
+                           <body>'''
+                           f'<span class="smallbold">Stand: {datetime.datetime.now().strftime("%H:%M Uhr, %d.%m.%Y")}</span><br/>')
         for section in config:
             if section != 'DEFAULT':
                 # get_data(config[section])
