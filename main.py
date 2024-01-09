@@ -201,7 +201,7 @@ def get_data_direct(section_config, week_start_date, target):
 
 if __name__ == '__main__':
     locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         stream=sys.stdout)
     outfile = f"{os.path.realpath(os.path.dirname(__file__))}/output.html"
     if len(sys.argv) > 1:
