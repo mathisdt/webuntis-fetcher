@@ -246,7 +246,8 @@ if __name__ == '__main__':
                 # get_data(config[section])
 
                 today = datetime.date.today()
-                monday = today - datetime.timedelta(days=today.weekday())
+                target = today + datetime.timedelta(days=2)
+                monday = target - datetime.timedelta(days=target.weekday())
                 get_data_direct(config[section], monday, target_file)
 
         write(target_file, '''</body>
