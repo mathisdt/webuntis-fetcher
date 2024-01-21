@@ -9,6 +9,8 @@ from typing import TextIO
 
 import requests
 
+ROWSPAN_APPLIED = "ROWSPAN_APPLIED"
+
 
 def get_element_name(elements: dict, element_type: int, element_id: int):
     """
@@ -43,7 +45,7 @@ def write(target: TextIO, line: str):
 
 def get_next_key(base: dict, this_key: datetime.time):
     last_key = None
-    for key in base.keys():
+    for key in sorted(base.keys()):
         if last_key == this_key:
             return key
         last_key = key
@@ -131,7 +133,7 @@ def get_data_direct(section_config, week_start_date, target):
             periods_by_time[start_time][date]["cell_class"] = "exam"
         elif period["cellState"] == "STANDARD":
             periods_by_time[start_time][date]["cell_class"] = "normal"
-        elif period["cellState"] in ("SHIFT", "SUBSTITUTION"):
+        elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ADDITIONAL"):
             periods_by_time[start_time][date]["cell_class"] = "change"
         elif period["cellState"] == "CANCEL":
             kind = "no"
@@ -149,6 +151,13 @@ def get_data_direct(section_config, week_start_date, target):
             add_entry(periods_by_time[start_time][date], "subject", kind, get_element_name(elements, 3, subject_id))
         for room_id in room_ids:
             add_entry(periods_by_time[start_time][date], "room", kind, get_element_name(elements, 4, room_id))
+        end_time_str = str(period["endTime"])
+        end_time = datetime.time(hour=int(end_time_str[:-2]), minute=int(end_time_str[-2:]))
+        periods_by_time[start_time][date]["date"] = date
+        periods_by_time[start_time][date]["start_time"] = start_time
+        if ("end_time" not in periods_by_time[start_time][date]
+                or end_time > periods_by_time[start_time][date]["end_time"]):
+            periods_by_time[start_time][date]["end_time"] = end_time
 
     group_string = f' ({section_config["class"]})' if "class" in section_config else ''
     write(target, f'''<h2>{section_config["firstname"]}{group_string}</h2>
@@ -168,16 +177,18 @@ def get_data_direct(section_config, week_start_date, target):
         for date in days:
             if date in row and row[date]:
                 period = row[date]
-                if period == "ROWSPAN_APPLIED":
+                if period == ROWSPAN_APPLIED:
                     continue
                 row_span = ''
                 if block_start:
                     next_start_time = get_next_key(periods_by_time, start_time)
                     if (next_start_time and next_start_time in periods_by_time and periods_by_time[next_start_time]
                             and date in periods_by_time[next_start_time] and periods_by_time[next_start_time][date]
-                            and periods_by_time[next_start_time][date] == period):
+                            and same_content(period, periods_by_time[next_start_time][date])
+                            or "end_time" in period and "start_time" in periods_by_time[next_start_time][date]
+                            and period["end_time"] > periods_by_time[next_start_time][date]["start_time"]):
                         row_span = ' rowspan="2"'
-                        periods_by_time[next_start_time][date] = "ROWSPAN_APPLIED"
+                        periods_by_time[next_start_time][date] = ROWSPAN_APPLIED
                 if "class" in section_config:
                     group_string = ""
                     teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
@@ -198,6 +209,14 @@ def get_data_direct(section_config, week_start_date, target):
         write(target, "</tr>")
         block_start = not block_start
     write(target, "</table>")
+
+
+def same_content(one: dict, two: dict):
+    return (one["cell_class"] == two["cell_class"]
+            and one["teacher"] == two["teacher"]
+            and one["group"] == two["group"]
+            and one["subject"] == two["subject"]
+            and one["room"] == two["room"])
 
 
 if __name__ == '__main__':
