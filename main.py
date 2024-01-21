@@ -169,7 +169,6 @@ def get_data_direct(section_config, week_start_date, target):
               f'<td class="width2 centered">{date.strftime("<b>%a</b> <span class=""bleak"">%d.%m.</span>")}</td>')
     write(target, "</tr>")
 
-    block_start = True
     for start_time in dict(sorted(periods_by_time.items())):
         row = dict(sorted(periods_by_time[start_time].items()))
         write(target, f'''<tr>
@@ -179,16 +178,23 @@ def get_data_direct(section_config, week_start_date, target):
                 period = row[date]
                 if period == ROWSPAN_APPLIED:
                     continue
-                row_span = ''
-                if block_start:
-                    next_start_time = get_next_key(periods_by_time, start_time)
+                row_span = 1
+                start_time_to_check = start_time
+                while get_next_key(periods_by_time, start_time_to_check):
+                    next_start_time = get_next_key(periods_by_time, start_time_to_check)
                     if (next_start_time and next_start_time in periods_by_time and periods_by_time[next_start_time]
                             and date in periods_by_time[next_start_time] and periods_by_time[next_start_time][date]
                             and same_content(period, periods_by_time[next_start_time][date])
-                            or "end_time" in period and "start_time" in periods_by_time[next_start_time][date]
+                            or "end_time" in period and date in periods_by_time[next_start_time]
+                            and "start_time" in periods_by_time[next_start_time][date]
                             and period["end_time"] > periods_by_time[next_start_time][date]["start_time"]):
-                        row_span = ' rowspan="2"'
+                        row_span = row_span + 1
                         periods_by_time[next_start_time][date] = ROWSPAN_APPLIED
+                    start_time_to_check = next_start_time
+                if row_span > 1:
+                    row_span_str = f' rowspan="{row_span}"'
+                else:
+                    row_span_str = ''
                 if "class" in section_config:
                     group_string = ""
                     teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
@@ -198,7 +204,7 @@ def get_data_direct(section_config, week_start_date, target):
                                    f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["group"] else ""}">{period["group"]["no"] if "no" in period["group"] else ""}</span>'
                     teacher_string = ""
                 write(target,
-                      f'<td class="centered {period["cell_class"]}"{row_span}>{group_string}'
+                      f'<td class="centered {period["cell_class"]}"{row_span_str}>{group_string}'
                       f'{period["subject"]["yes"] if "yes" in period["subject"] else ""}'
                       f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["subject"] else ""}">{period["subject"]["no"] if "no" in period["subject"] else ""}</span>'
                       f'{teacher_string}<br/>'
@@ -207,7 +213,6 @@ def get_data_direct(section_config, week_start_date, target):
             else:
                 write(target, "<td></td>")
         write(target, "</tr>")
-        block_start = not block_start
     write(target, "</table>")
 
 
