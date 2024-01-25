@@ -144,6 +144,12 @@ def get_data_direct(section_config, week_start_date, target):
                 periods_by_time[start_time][date]["cell_class"] = "cancel"
         else:
             periods_by_time[start_time][date]["cell_class"] = "warn"
+
+        if "teacher_as_cancelled" in section_config:
+            for teacher_id in teacher_ids:
+                if section_config["teacher_as_cancelled"] == get_element_name(elements, 2, teacher_id):
+                    periods_by_time[start_time][date]["cell_class"] = "cancel"
+
         for group_id in group_ids:
             add_entry(periods_by_time[start_time][date], "group", kind, get_element_name(elements, 1, group_id))
         for teacher_id in teacher_ids:
@@ -268,8 +274,6 @@ if __name__ == '__main__':
                            f'<span class="smallbold">Stand: {datetime.datetime.now().strftime("%H:%M Uhr, %d.%m.%Y")}</span><br/>')
         for section in config:
             if section != 'DEFAULT':
-                # get_data(config[section])
-
                 today = datetime.date.today()
                 target = today + datetime.timedelta(days=2)
                 monday = target - datetime.timedelta(days=target.weekday())
