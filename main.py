@@ -8,6 +8,7 @@ import sys
 from typing import TextIO
 
 import requests
+from requests import RequestException
 
 ROWSPAN_APPLIED = "ROWSPAN_APPLIED"
 
@@ -272,7 +273,11 @@ if __name__ == '__main__':
                 today = datetime.date.today()
                 target = today + datetime.timedelta(days=2)
                 monday = target - datetime.timedelta(days=target.weekday())
-                get_data_direct(config[section], monday, target_file)
+                try:
+                    get_data_direct(config[section], monday, target_file)
+                except RequestException as re:
+                    # silently ignore connection problems
+                    exit(1)
 
         write(target_file, '''</body>
                                 </html>''')
