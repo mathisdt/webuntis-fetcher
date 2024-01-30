@@ -134,9 +134,9 @@ def get_data_direct(section_config, week_start_date, target):
             periods_by_time[start_time][date]["cell_class"] = "exam"
         elif period["cellState"] == "STANDARD":
             periods_by_time[start_time][date]["cell_class"] = "normal"
-        elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ADDITIONAL"):
+        elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ROOMSUBSTITUTION", "ADDITIONAL"):
             periods_by_time[start_time][date]["cell_class"] = "change"
-        elif period["cellState"] == "CANCEL":
+        elif period["cellState"] in ("CANCEL", "FREE"):
             kind = "no"
             if ("cell_class" not in periods_by_time[start_time][date]
                     or not periods_by_time[start_time][date]["cell_class"] == "change"):
