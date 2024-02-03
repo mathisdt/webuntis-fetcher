@@ -134,7 +134,7 @@ def get_data_direct(section_config, week_start_date, target):
             periods_by_time[start_time][date]["cell_class"] = "exam"
         elif period["cellState"] == "STANDARD":
             periods_by_time[start_time][date]["cell_class"] = "normal"
-        elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ROOMSUBSTITUTION", "ADDITIONAL"):
+        elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ROOMSUBSTITUTION", "ADDITIONAL", "SUBST_TEXT"):
             periods_by_time[start_time][date]["cell_class"] = "change"
         elif period["cellState"] in ("CANCEL", "FREE"):
             kind = "no"
@@ -215,8 +215,8 @@ def get_data_direct(section_config, week_start_date, target):
                       f'{period["subject"]["yes"] if "yes" in period["subject"] else ""}'
                       f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["subject"] else ""}">{period["subject"]["no"] if "no" in period["subject"] else ""}</span>'
                       f'{teacher_string}<br/>'
-                      f'<small>@ {period["room"]["yes"] if "yes" in period["room"] else ""}'
-                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["room"] else ""}">{period["room"]["no"] if "no" in period["room"] else ""}</span></small></td>')
+                      f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
+                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small></td>')
             else:
                 write(target, "<td></td>")
         write(target, "</tr>")
@@ -224,11 +224,11 @@ def get_data_direct(section_config, week_start_date, target):
 
 
 def same_content(one: dict, two: dict):
-    return (one["cell_class"] == two["cell_class"]
-            and one["teacher"] == two["teacher"]
-            and one["group"] == two["group"]
-            and one["subject"] == two["subject"]
-            and one["room"] == two["room"])
+    return (one.get("cell_class") == two.get("cell_class")
+            and one.get("teacher") == two.get("teacher")
+            and one.get("group") == two.get("group")
+            and one.get("subject") == two.get("subject")
+            and one.get("room") == two.get("room"))
 
 
 if __name__ == '__main__':
