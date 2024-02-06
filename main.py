@@ -116,6 +116,9 @@ def get_data_direct(section_config, week_start_date, target):
     periods = week_data["data"]["result"]["data"]["elementPeriods"][str(person_id)]
     elements = week_data["data"]["result"]["data"]["elements"]
 
+    infotexts_to_ignore = [t.strip() for t in section_config["ignore_infotext"].split(sep="|")] \
+        if "ignore_infotext" in section_config else ()
+
     for period in periods:
         day = str(period["date"])
         date = datetime.date(year=int(day[:4]), month=int(day[4:6]), day=int(day[6:]))
@@ -165,6 +168,23 @@ def get_data_direct(section_config, week_start_date, target):
         if ("end_time" not in periods_by_time[start_time][date]
                 or end_time > periods_by_time[start_time][date]["end_time"]):
             periods_by_time[start_time][date]["end_time"] = end_time
+
+        periods_by_time[start_time][date]["infotext"] = ""
+        if "lessonText" in period and period["lessonText"] not in periods_by_time[start_time][date]["infotext"] \
+                and period["lessonText"] not in infotexts_to_ignore:
+            periods_by_time[start_time][date]["infotext"] += f'{period["lessonText"]} '
+        if "periodText" in period and period["periodText"] not in periods_by_time[start_time][date]["infotext"] \
+                and period["periodText"] not in infotexts_to_ignore:
+            periods_by_time[start_time][date]["infotext"] += f'{period["periodText"]} '
+        if "periodInfo" in period and period["periodInfo"] not in periods_by_time[start_time][date]["infotext"] \
+                and period["periodInfo"] not in infotexts_to_ignore:
+            periods_by_time[start_time][date]["infotext"] += f'{period["periodInfo"]} '
+        if "substText" in period and period["substText"] not in periods_by_time[start_time][date]["infotext"] \
+                and period["substText"] not in infotexts_to_ignore:
+            periods_by_time[start_time][date]["infotext"] += f'{period["substText"]} '
+        if "staffText" in period and period["staffText"] not in periods_by_time[start_time][date]["infotext"] \
+                and period["staffText"] not in infotexts_to_ignore:
+            periods_by_time[start_time][date]["infotext"] += f'{period["staffText"]} '
 
     group_string = f' ({section_config["class"]})' if "class" in section_config else ''
     write(target, f'''<h2>{section_config["firstname"]}{group_string}</h2>
@@ -216,7 +236,8 @@ def get_data_direct(section_config, week_start_date, target):
                       f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["subject"] else ""}">{period["subject"]["no"] if "no" in period["subject"] else ""}</span>'
                       f'{teacher_string}<br/>'
                       f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
-                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small></td>')
+                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small>'
+                      f'{"<br/>" + period["infotext"].strip() if "infotext" in period and len(period["infotext"]) else ""}</td>')
             else:
                 write(target, "<td></td>")
         write(target, "</tr>")
