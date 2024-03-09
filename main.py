@@ -123,7 +123,10 @@ def get_data_direct(section_config, week_start_date, target):
         day = str(period["date"])
         date = datetime.date(year=int(day[:4]), month=int(day[4:6]), day=int(day[6:]))
         time = str(period["startTime"])
-        start_time = datetime.time(hour=int(time[:-2]), minute=int(time[-2:]))
+        if time == '0':
+            start_time = datetime.time(hour=0, minute=0)
+        else:
+            start_time = datetime.time(hour=int(time[:-2]), minute=int(time[-2:]))
         if start_time not in periods_by_time:
             periods_by_time[start_time] = dict()
         group_ids = get_element_id_list(period["elements"], 1)
@@ -135,8 +138,6 @@ def get_data_direct(section_config, week_start_date, target):
         kind = "yes"
         if period["cellState"] == "EXAM":
             periods_by_time[start_time][date]["cell_class"] = "exam"
-        elif period["cellState"] == "STANDARD":
-            periods_by_time[start_time][date]["cell_class"] = "normal"
         elif period["cellState"] in ("SHIFT", "SUBSTITUTION", "ROOMSUBSTITUTION", "ADDITIONAL", "SUBST_TEXT"):
             periods_by_time[start_time][date]["cell_class"] = "change"
         elif period["cellState"] in ("CANCEL", "FREE"):
@@ -145,6 +146,10 @@ def get_data_direct(section_config, week_start_date, target):
                     or not periods_by_time[start_time][date]["cell_class"] == "change"):
                 # we don't already have a "change" entry, so we may put "cancel" as cell class:
                 periods_by_time[start_time][date]["cell_class"] = "cancel"
+        elif period["cellState"] == "STANDARD":
+            # only if we don't have a cell class already (parallel entries: non-standard takes precendence)
+            if "cell_class" not in periods_by_time[start_time][date]:
+                periods_by_time[start_time][date]["cell_class"] = "normal"
         else:
             periods_by_time[start_time][date]["cell_class"] = "warn"
 
@@ -232,8 +237,8 @@ def get_data_direct(section_config, week_start_date, target):
                     teacher_string = ""
                 write(target,
                       f'<td class="centered {period["cell_class"]}"{row_span_str}>{group_string}'
-                      f'{period["subject"]["yes"] if "yes" in period["subject"] else ""}'
-                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["subject"] else ""}">{period["subject"]["no"] if "no" in period["subject"] else ""}</span>'
+                      f'{period["subject"]["yes"] if "subject" in period and "yes" in period["subject"] else ""}'
+                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "subject" in period and "no" in period["subject"] else ""}">{period["subject"]["no"] if "subject" in period and "no" in period["subject"] else ""}</span>'
                       f'{teacher_string}<br/>'
                       f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
                       f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small>'
