@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "05:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 100
+    allow:
+      - dependency-type: "direct"
+    labels:
+      - "dependencies"
+      - "automatic-merge"
