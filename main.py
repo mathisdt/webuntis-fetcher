@@ -177,19 +177,38 @@ def get_data_direct(section_config, week_start_date, target):
         periods_by_time[start_time][date]["infotext"] = ""
         if "lessonText" in period and period["lessonText"] not in periods_by_time[start_time][date]["infotext"] \
                 and period["lessonText"] not in infotexts_to_ignore:
-            periods_by_time[start_time][date]["infotext"] += f'{period["lessonText"]} '
+            if periods_by_time[start_time][date]["infotext"].strip() in period["lessonText"]:
+                periods_by_time[start_time][date]["infotext"] = f'{period["lessonText"]} '
+            else:
+                periods_by_time[start_time][date]["infotext"] += f'{period["lessonText"]} '
         if "periodText" in period and period["periodText"] not in periods_by_time[start_time][date]["infotext"] \
                 and period["periodText"] not in infotexts_to_ignore:
-            periods_by_time[start_time][date]["infotext"] += f'{period["periodText"]} '
+            if periods_by_time[start_time][date]["infotext"].strip() in period["periodText"]:
+                periods_by_time[start_time][date]["infotext"] = f'{period["periodText"]} '
+            else:
+                periods_by_time[start_time][date]["infotext"] += f'{period["periodText"]} '
         if "periodInfo" in period and period["periodInfo"] not in periods_by_time[start_time][date]["infotext"] \
                 and period["periodInfo"] not in infotexts_to_ignore:
-            periods_by_time[start_time][date]["infotext"] += f'{period["periodInfo"]} '
+            if periods_by_time[start_time][date]["infotext"].strip() in period["periodInfo"]:
+                periods_by_time[start_time][date]["infotext"] = f'{period["periodInfo"]} '
+            else:
+                periods_by_time[start_time][date]["infotext"] += f'{period["periodInfo"]} '
         if "substText" in period and period["substText"] not in periods_by_time[start_time][date]["infotext"] \
                 and period["substText"] not in infotexts_to_ignore:
-            periods_by_time[start_time][date]["infotext"] += f'{period["substText"]} '
+            if periods_by_time[start_time][date]["infotext"].strip() in period["substText"]:
+                periods_by_time[start_time][date]["infotext"] = f'{period["substText"]} '
+            else:
+                periods_by_time[start_time][date]["infotext"] += f'{period["substText"]} '
         if "staffText" in period and period["staffText"] not in periods_by_time[start_time][date]["infotext"] \
                 and period["staffText"] not in infotexts_to_ignore:
-            periods_by_time[start_time][date]["infotext"] += f'{period["staffText"]} '
+            if periods_by_time[start_time][date]["infotext"].strip() in period["staffText"]:
+                periods_by_time[start_time][date]["infotext"] = f'{period["staffText"]} '
+            else:
+                periods_by_time[start_time][date]["infotext"] += f'{period["staffText"]} '
+        if periods_by_time[start_time][date]["infotext"]:
+            # delete duplicate words from infotext:
+            periods_by_time[start_time][date]["infotext"] \
+                = ' '.join(dict.fromkeys(periods_by_time[start_time][date]["infotext"].split()))
 
     group_string = f' ({section_config["class"]})' if "class" in section_config else ''
     write(target, f'''<h2>{section_config["firstname"]}{group_string}</h2>
