@@ -94,6 +94,9 @@ def get_data_direct(section_config, week_start_date, target):
                                           cookies=cookies)
     week_data = response_week_data.json()
 
+    if "data" not in week_data or "result" not in week_data["data"]:
+        return
+
     days = [week_start_date + datetime.timedelta(days=x) for x in range(5)]
     periods_by_time = dict()
 
