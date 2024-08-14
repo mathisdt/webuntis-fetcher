@@ -21,6 +21,10 @@ whenever Untis decides to change their backend.
    - `firstname` and `lastname` are used to look up the person for which the time table should
      be displayed. This way you can use a parent login (which potentially has access to multiple
      children's time tables) and still determine what should be displayed.
+   - `teacher_fullname_function` can be set to the name of a function which returns a dict
+     and is called only once per run - the result is used to result teacher names to
+     their full names because sometimes the "names" in Webuntis are only abbreviations.
+     For an example, see `kks_kannover_teachers` in the code.
 3. Make sure that at least Python 3.9 and the necessary libraries are installed
    (e.g. by executing `pip3 install -r requirements.txt`). You can also set up a
    [venv](https://docs.python.org/3/library/venv.html) and install the requirements

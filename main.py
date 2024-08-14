@@ -8,9 +8,26 @@ import sys
 from typing import TextIO
 
 import requests
-from requests import RequestException
+from bs4 import BeautifulSoup
 
 ROWSPAN_APPLIED = "ROWSPAN_APPLIED"
+
+
+def kks_kannover_teachers() -> dict:
+    html = requests.get("https://www.kks-hannover.de/ueber-uns/personen/kollegium/").text
+
+    soup = BeautifulSoup(html, features="html.parser")
+    table = soup.find("table")
+
+    headings = [th.get_text() for th in table.find("tr").find_all("th")]
+    index_of_lastname = headings.index("Nachname")
+    index_of_abbreviation = headings.index("Kürzel")
+
+    abbrev_to_name = {}
+    for row in table.find_all("tr")[1:]:
+        row_data = [td.get_text() for td in row.find_all("td")]
+        abbrev_to_name[row_data[index_of_abbreviation]] = row_data[index_of_lastname]
+    return abbrev_to_name
 
 
 def get_element_name(elements: dict, element_type: int, element_id: int):
@@ -122,6 +139,9 @@ def get_data_direct(section_config, week_start_date, target):
     infotexts_to_ignore = [t.strip() for t in section_config["ignore_infotext"].split(sep="|")] \
         if "ignore_infotext" in section_config else ()
 
+    teacher_fullnames = eval(section_config["teacher_fullname_function"] + "()") \
+        if "teacher_fullname_function" in section_config else None
+
     for period in periods:
         day = str(period["date"])
         date = datetime.date(year=int(day[:4]), month=int(day[4:6]), day=int(day[6:]))
@@ -164,7 +184,10 @@ def get_data_direct(section_config, week_start_date, target):
         for group_id in group_ids:
             add_entry(periods_by_time[start_time][date], "group", kind, get_element_name(elements, 1, group_id))
         for teacher_id in teacher_ids:
-            add_entry(periods_by_time[start_time][date], "teacher", kind, get_element_name(elements, 2, teacher_id))
+            teacher = get_element_name(elements, 2, teacher_id)
+            if teacher_fullnames is not None and teacher in teacher_fullnames:
+                teacher = teacher_fullnames[teacher]
+            add_entry(periods_by_time[start_time][date], "teacher", kind, teacher)
         for subject_id in subject_ids:
             add_entry(periods_by_time[start_time][date], "subject", kind, get_element_name(elements, 3, subject_id))
         for room_id in room_ids:
@@ -327,7 +350,7 @@ if __name__ == '__main__':
                 monday = target - datetime.timedelta(days=target.weekday())
                 try:
                     get_data_direct(config[section], monday, target_file)
-                except RequestException as re:
+                except requests.RequestException as re:
                     # silently ignore connection problems
                     exit(1)
 
