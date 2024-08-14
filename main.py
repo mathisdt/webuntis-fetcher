@@ -23,7 +23,8 @@ def kks_kannover_teachers() -> dict:
     index_of_lastname = headings.index("Nachname")
     index_of_abbreviation = headings.index("Kürzel")
 
-    abbrev_to_name = {}
+    # some teachers are not on the web site:
+    abbrev_to_name = {"HAT": "Hatala", "PAP": "Pape", "VER": "Verwolt"}
     for row in table.find_all("tr")[1:]:
         row_data = [td.get_text() for td in row.find_all("td")]
         abbrev_to_name[row_data[index_of_abbreviation]] = row_data[index_of_lastname]
