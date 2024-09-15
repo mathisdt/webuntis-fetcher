@@ -2,5 +2,6 @@
 /venv/
 /.venv/
 config.ini
+config-messages.ini
 *~
 output.html
