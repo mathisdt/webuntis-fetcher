@@ -51,7 +51,7 @@ whenever Untis decides to change their backend.
    - `message_id_file` should point to any writable file name. It does not have
      to exist.
    - `mail_from`, `mail_to` and `mail_host` are self-explanatory. `mail_to` can contain
-     multiple addresses separated by a semicolon.
+     multiple addresses separated by a comma.
 3. Make sure that at least Python 3.9 and the necessary libraries are installed
    (e.g. by executing `pip3 install -r requirements.txt`). You can also set up a
    [venv](https://docs.python.org/3/library/venv.html) and install the requirements
