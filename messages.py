@@ -83,7 +83,8 @@ if __name__ == '__main__':
                                 msg_attachments[att["name"]] = download_response.content
 
                         mail = EmailMessage()
-                        mail.set_content(msg_details["content"])
+                        content = msg_details["content"] if "content" in msg_details and msg_details["content"] is not None else ""
+                        mail.set_content(content)
                         for att in msg_attachments:
                             mimetype = mimetypes.guess_type(url=att)
                             if "/" in mimetype[0]:
