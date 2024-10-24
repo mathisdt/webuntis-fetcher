@@ -181,6 +181,10 @@ def get_data_direct(section_config, week_start_date, target):
             for teacher_id in teacher_ids:
                 if section_config["teacher_as_cancelled"] == get_element_name(elements, 2, teacher_id):
                     periods_by_time[start_time][date]["cell_class"] = "cancel"
+        if "room_as_cancelled" in section_config:
+            for room_id in room_ids:
+                if section_config["room_as_cancelled"] == get_element_name(elements, 4, room_id):
+                    periods_by_time[start_time][date]["cell_class"] = "cancel"
 
         for group_id in group_ids:
             add_entry(periods_by_time[start_time][date], "group", kind, get_element_name(elements, 1, group_id))
