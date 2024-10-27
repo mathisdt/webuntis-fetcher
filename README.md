@@ -27,6 +27,10 @@ whenever Untis decides to change their backend.
      and is called only once per run - the result is used to result teacher names to
      their full names because sometimes the "names" in Webuntis are only abbreviations.
      For an example, see `kks_kannover_teachers` in the code.
+   - `statistics_file` can optionally point to a writable location of a XLSX file. Is does not 
+     have to exist yet but it will be created if given. The content of this file will be
+     preserved over the weeks, and new data will be appended on the first sheet. The overall
+     statistics on the second sheet will be updated accordingly.
 3. Make sure that at least Python 3.9 and the necessary libraries are installed
    (e.g. by executing `pip3 install -r requirements.txt`). You can also set up a
    [venv](https://docs.python.org/3/library/venv.html) and install the requirements

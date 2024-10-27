@@ -9,8 +9,7 @@ from typing import TextIO
 
 import requests
 from bs4 import BeautifulSoup
-
-ROWSPAN_APPLIED = "ROWSPAN_APPLIED"
+from statistics import Statistics
 
 
 def kks_kannover_teachers() -> dict:
@@ -81,6 +80,11 @@ def add_entry(data_dict: dict, category: str, kind: str, element: str):
 
 
 def get_data_direct(section_config, week_start_date, target):
+    statistics = None
+    if "statistics_file" in section_config:
+        statistics = Statistics(section_config["statistics_file"],
+                                f"{section_config["firstname"]} {section_config["lastname"]} - {section_config["class"]}")
+        statistics.open()
     response_initial = requests.get(f'{section_config["server"]}/WebUntis/?school={section_config["school"]}')
     cookies = response_initial.cookies
     requests.post(f'{section_config["server"]}/WebUntis/j_spring_security_check', cookies=cookies,
@@ -258,45 +262,86 @@ def get_data_direct(section_config, week_start_date, target):
         for date in days:
             if date in row and row[date]:
                 period = row[date]
-                if period == ROWSPAN_APPLIED:
-                    continue
-                row_span = 1
-                start_time_to_check = start_time
-                while get_next_key(periods_by_time, start_time_to_check):
-                    next_start_time = get_next_key(periods_by_time, start_time_to_check)
-                    if (next_start_time and next_start_time in periods_by_time and periods_by_time[next_start_time]
-                            and date in periods_by_time[next_start_time] and periods_by_time[next_start_time][date]
-                            and same_content(period, periods_by_time[next_start_time][date])
-                            or "end_time" in period and date in periods_by_time[next_start_time]
-                            and "start_time" in periods_by_time[next_start_time][date]
-                            and period["end_time"] > periods_by_time[next_start_time][date]["start_time"]):
-                        row_span = row_span + 1
-                        periods_by_time[next_start_time][date] = ROWSPAN_APPLIED
-                    start_time_to_check = next_start_time
-                if row_span > 1:
-                    row_span_str = f' rowspan="{row_span}"'
-                else:
-                    row_span_str = ''
-                if "class" in section_config:
-                    group_string = ""
-                    teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
-                                     f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>'
-                else:
-                    group_string = f'<span class="spaceright">{period["group"]["yes"] if "yes" in period["group"] else ""}</span>' \
-                                   f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["group"] else ""}">{period["group"]["no"] if "no" in period["group"] else ""}</span>'
-                    teacher_string = ""
-                write(target,
-                      f'<td class="centered {period["cell_class"]}"{row_span_str}>{group_string}'
-                      f'{period["subject"]["yes"] if "subject" in period and "yes" in period["subject"] else ""}'
-                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "subject" in period and "no" in period["subject"] else ""}">{period["subject"]["no"] if "subject" in period and "no" in period["subject"] else ""}</span>'
-                      f'{teacher_string}<br/>'
-                      f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
-                      f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small>'
-                      f'{"<br/>" + period["infotext"].strip() if "infotext" in period and len(period["infotext"]) else ""}</td>')
+                if "rowspan_applied" not in period or not period["rowspan_applied"]:
+                    row_span = 1
+                    start_time_to_check = start_time
+                    while get_next_key(periods_by_time, start_time_to_check):
+                        next_start_time = get_next_key(periods_by_time, start_time_to_check)
+                        if (next_start_time and next_start_time in periods_by_time and periods_by_time[next_start_time]
+                                and date in periods_by_time[next_start_time] and periods_by_time[next_start_time][date]
+                                and same_content(period, periods_by_time[next_start_time][date])
+                                or "end_time" in period and date in periods_by_time[next_start_time]
+                                and "start_time" in periods_by_time[next_start_time][date]
+                                and period["end_time"] > periods_by_time[next_start_time][date]["start_time"]):
+                            row_span = row_span + 1
+                            periods_by_time[next_start_time][date]["rowspan_applied"] = True
+                            # copy the values from the "rowspan master":
+                            periods_by_time[next_start_time][date]["teacher"] = period["teacher"]
+                            periods_by_time[next_start_time][date]["subject"] = period["subject"]
+                            periods_by_time[next_start_time][date]["room"] = period["room"]
+                            periods_by_time[next_start_time][date]["group"] = period["group"]
+                            periods_by_time[next_start_time][date]["cell_class"] = period["cell_class"]
+                        start_time_to_check = next_start_time
+                    if row_span > 1:
+                        row_span_str = f' rowspan="{row_span}"'
+                    else:
+                        row_span_str = ''
+                    if "class" in section_config:
+                        group_string = ""
+                        teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
+                                         f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>'
+                    else:
+                        group_string = f'<span class="spaceright">{period["group"]["yes"] if "yes" in period["group"] else ""}</span>' \
+                                       f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "no" in period["group"] else ""}">{period["group"]["no"] if "no" in period["group"] else ""}</span>'
+                        teacher_string = ""
+                    write(target,
+                          f'<td class="centered {period["cell_class"]}"{row_span_str}>{group_string}'
+                          f'{period["subject"]["yes"] if "subject" in period and "yes" in period["subject"] else ""}'
+                          f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "subject" in period and "no" in period["subject"] else ""}">{period["subject"]["no"] if "subject" in period and "no" in period["subject"] else ""}</span>'
+                          f'{teacher_string}<br/>'
+                          f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
+                          f'<span class="no{" spaceleft" if period["cell_class"] == "change" and "room" in period and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small>'
+                          f'{"<br/>" + period["infotext"].strip() if "infotext" in period and len(period["infotext"]) else ""}</td>')
+                if statistics:
+                    planned_teacher = None
+                    actual_teacher = None
+                    planned_subject = None
+                    actual_subject = None
+                    if "teacher" in periods_by_time[start_time][date]:
+                        if "no" in periods_by_time[start_time][date]["teacher"]:
+                            planned_teacher = periods_by_time[start_time][date]["teacher"]["no"]
+                        else:
+                            planned_teacher = periods_by_time[start_time][date]["teacher"]["yes"]
+                        if "yes" in periods_by_time[start_time][date]["teacher"]:
+                            actual_teacher = periods_by_time[start_time][date]["teacher"]["yes"]
+                    if "subject" in periods_by_time[start_time][date]:
+                        if "no" in periods_by_time[start_time][date]["subject"]:
+                            planned_subject = periods_by_time[start_time][date]["subject"]["no"]
+                        else:
+                            planned_subject = periods_by_time[start_time][date]["subject"]["yes"]
+                        if "yes" in periods_by_time[start_time][date]["subject"]:
+                            actual_subject = periods_by_time[start_time][date]["subject"]["yes"]
+                    if "cell_class" in periods_by_time[start_time][date]:
+                        is_cancelled = periods_by_time[start_time][date]["cell_class"] == "cancel"
+                    else:
+                        is_cancelled = False
+                    if "infotext" in periods_by_time[start_time][date]:
+                        comment = periods_by_time[start_time][date]["infotext"]
+                    else:
+                        comment = None
+                    statistics.put(datetime.datetime.combine(date, start_time),
+                                   planned_teacher,
+                                   planned_subject,
+                                   actual_teacher=actual_teacher,
+                                   actual_subject=actual_subject,
+                                   is_cancelled=is_cancelled,
+                                   comment=comment)
             else:
                 write(target, "<td></td>")
         write(target, "</tr>")
     write(target, "</table>")
+    if statistics:
+        statistics.save()
 
 
 def same_content(one: dict, two: dict):
