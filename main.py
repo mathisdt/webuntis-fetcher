@@ -83,7 +83,7 @@ def get_data_direct(section_config, week_start_date, target):
     statistics = None
     if "statistics_file" in section_config:
         statistics = Statistics(section_config["statistics_file"],
-                                f"{section_config["firstname"]} {section_config["lastname"]} - {section_config["class"]}")
+                                f'{section_config["firstname"]} {section_config["lastname"]} - {section_config["class"]}')
         statistics.open()
     response_initial = requests.get(f'{section_config["server"]}/WebUntis/?school={section_config["school"]}')
     cookies = response_initial.cookies
