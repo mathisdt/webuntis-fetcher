@@ -365,9 +365,9 @@ def get_data_direct(section_config, week_start_date, target):
     if statistics:
         statistics.save()
         write(target, f'<span class="bleak">seit {statistics.earliest_date().strftime("%d.%m.%Y")}:'
-                      f' Entfall = {round(100 * statistics.percentage_cancelled(), 2)} % /'
-                      f' Fach&auml;nderung = {round(100 * statistics.percentage_changed_subject())} % /'
-                      f' personelle &Auml;nderung = {round(100 * statistics.percentage_changed_teacher())} %</span>')
+                      f' Entfall = {round(100 * statistics.percentage_cancelled(), 1)} % /'
+                      f' Fach&auml;nderung = {round(100 * statistics.percentage_changed_subject(), 1)} % /'
+                      f' personelle &Auml;nderung = {round(100 * statistics.percentage_changed_teacher(), 1)} %</span>')
 
 
 def same_content(one: dict, two: dict):
