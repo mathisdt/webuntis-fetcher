@@ -272,7 +272,7 @@ def get_data_direct(section_config, week_start_date, target):
                        <td class="width1"></td>''')
     for date in days:
         write(target,
-              f'<td class="width2 centered">{date.strftime("<b>%a</b> <span class=""bleak"">%d.%m.</span>")}</td>')
+              f'<td class="width2 centered">{date.strftime("<b>%a</b> <span class=""smallbleak"">%d.%m.</span>")}</td>')
     write(target, "</tr>")
 
     for start_time in dict(sorted(periods_by_time.items())):
@@ -364,6 +364,10 @@ def get_data_direct(section_config, week_start_date, target):
     write(target, "</table>")
     if statistics:
         statistics.save()
+        write(target, f'<span class="bleak">seit {statistics.earliest_date().strftime("%d.%m.%Y")}:'
+                      f' Entfall = {round(100 * statistics.percentage_cancelled(), 2)} % /'
+                      f' Fach&auml;nderung = {round(100 * statistics.percentage_changed_subject())} % /'
+                      f' personelle &Auml;nderung = {round(100 * statistics.percentage_changed_teacher())} %</span>')
 
 
 def same_content(one: dict, two: dict):
@@ -401,7 +405,8 @@ if __name__ == '__main__':
                            .height2 { height: 47px }
                            .text_top { vertical-align: top }
                            .centered { text-align: center; vertical-align: middle }
-                           .bleak { color: #999999; font-size: small }
+                           .smallbleak { color: #999999; font-size: small }
+                           .bleak { color: #999999 }
                            .smallbold { font-size: small; font-weight: bold }
                            .no { text-decoration: line-through }
                            .spaceleft { padding-left: 0.5em }

@@ -21,6 +21,10 @@ class Statistics:
         self.workbook_filename = None
         self.title = title
         self.data = dict()
+        self.count_all = 0
+        self.count_changed_teacher = 0
+        self.count_changed_subject = 0
+        self.count_cancelled = 0
 
     def open(self):
         """
@@ -55,23 +59,23 @@ class Statistics:
         statsheet = workbook.create_sheet(f"{self.title} - Statistics")
         statsheet.append(["percentage_changed_teacher", "percentage_changed_subject", "percentage_cancelled"])
 
-        count_all = 0
-        count_changed_teacher = 0
-        count_changed_subject = 0
-        count_cancelled = 0
+        self.count_all = 0
+        self.count_changed_teacher = 0
+        self.count_changed_subject = 0
+        self.count_cancelled = 0
 
         for timestamp in sorted(self.data.keys()):
             entry = self.data[timestamp]
             datasheet.append([timestamp, entry["planned_teacher"], entry["planned_subject"], entry["actual_teacher"],
                               entry["actual_subject"], entry["is_cancelled"], entry["comment"]])
-            count_all += 1
+            self.count_all += 1
             if entry["is_cancelled"]:
-                count_cancelled += 1
+                self.count_cancelled += 1
             else:
                 if entry["planned_teacher"] != entry["actual_teacher"]:
-                    count_changed_teacher += 1
+                    self.count_changed_teacher += 1
                 if entry["planned_subject"] != entry["actual_subject"]:
-                    count_changed_subject += 1
+                    self.count_changed_subject += 1
         for cell in datasheet["A"]:
             cell.alignment = Alignment(horizontal='left')
             cell.number_format = 'YYYY-MM-DD HH:MM:SS'
@@ -79,9 +83,9 @@ class Statistics:
             length = max(len(str(cell.value)) for cell in column_cells)
             datasheet.column_dimensions[column_cells[0].column_letter].width = length
 
-        statsheet.append([count_changed_teacher / count_all,
-                          count_changed_subject / count_all,
-                          count_cancelled / count_all])
+        statsheet.append([self.count_changed_teacher / self.count_all,
+                          self.count_changed_subject / self.count_all,
+                          self.count_cancelled / self.count_all])
         statsheet["A2"].number_format = '0.00" "%'
         statsheet["B2"].number_format = '0.00" "%'
         statsheet["C2"].number_format = '0.00" "%'
@@ -99,3 +103,15 @@ class Statistics:
                                     "actual_subject": actual_subject,
                                     "is_cancelled": is_cancelled,
                                     "comment": comment}
+
+    def earliest_date(self):
+        return sorted(self.data.keys())[0]
+
+    def percentage_cancelled(self):
+        return self.count_cancelled / self.count_all
+
+    def percentage_changed_subject(self):
+        return self.count_changed_subject / self.count_all
+
+    def percentage_changed_teacher(self):
+        return self.count_changed_teacher / self.count_all
