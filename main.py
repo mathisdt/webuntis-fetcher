@@ -23,7 +23,8 @@ def kks_kannover_teachers() -> dict:
     index_of_abbreviation = headings.index("Kürzel")
 
     # some teachers are not on the web site:
-    abbrev_to_name = {"HAT": "Hatala", "PAP": "Pape", "VER": "Verwolt", "JK": "Junitz-Kofeld", "PFL": "Pflanz"}
+    abbrev_to_name = {"HAT": "Hatala", "PAP": "Pape", "VER": "Verwolt", "JK": "Junitz-Kofeld", "PFL": "Pflanz",
+                      "BEJ": "Berger"}
     for row in table.find_all("tr")[1:]:
         row_data = [td.get_text() for td in row.find_all("td")]
         abbrev_to_name[row_data[index_of_abbreviation]] = row_data[index_of_lastname]
@@ -199,12 +200,12 @@ def get_data_direct(section_config, week_start_date, target):
             add_entry(periods_by_time[start_time][date], "group", kind, get_element_name(elements, 1, group_id))
         for teacher_id in teacher_ids:
             teacher = get_element_name(elements, 2, teacher_id)
-            if teacher_fullnames is not None and teacher in teacher_fullnames:
+            if teacher_fullnames is not None and teacher in teacher_fullnames and teacher_fullnames[teacher]:
                 teacher = teacher_fullnames[teacher]
             add_entry(periods_by_time[start_time][date], "teacher", kind, teacher)
         for teacher_id in original_teacher_ids:
             teacher = get_element_name(elements, 2, teacher_id)
-            if teacher_fullnames is not None and teacher in teacher_fullnames:
+            if teacher_fullnames is not None and teacher in teacher_fullnames and teacher_fullnames[teacher]:
                 teacher = teacher_fullnames[teacher]
             add_entry(periods_by_time[start_time][date], "teacher", "no", teacher)
         for subject_id in subject_ids:
@@ -296,13 +297,8 @@ def get_data_direct(section_config, week_start_date, target):
                             row_span = row_span + 1
                             periods_by_time[next_start_time][date]["rowspan_applied"] = True
                             # copy the values from the "rowspan master":
-                            periods_by_time[next_start_time][date]["teacher"] = period["teacher"]
-                            periods_by_time[next_start_time][date]["subject"] = period["subject"]
-                            periods_by_time[next_start_time][date]["room"] = period["room"]
-                            periods_by_time[next_start_time][date]["group"] = period["group"]
-                            periods_by_time[next_start_time][date]["cell_class"] = period["cell_class"]
-                            if "infotext" in period:
-                                periods_by_time[next_start_time][date]["infotext"] = period["infotext"]
+                            copy_values_for(period, periods_by_time[next_start_time][date],
+                                            "teacher", "subject", "room", "group", "cell_class", "infotext")
                         start_time_to_check = next_start_time
                     if row_span > 1:
                         row_span_str = f' rowspan="{row_span}"'
@@ -368,6 +364,12 @@ def get_data_direct(section_config, week_start_date, target):
                       f' Entfall = {round(100 * statistics.percentage_cancelled(), 1)} % /'
                       f' Fach&auml;nderung = {round(100 * statistics.percentage_changed_subject(), 1)} % /'
                       f' personelle &Auml;nderung = {round(100 * statistics.percentage_changed_teacher(), 1)} %</span>')
+
+
+def copy_values_for(source_dict: dict, target_dict: dict, *keys: str):
+    for key in keys:
+        if key in source_dict:
+            target_dict[key] = source_dict[key]
 
 
 def same_content(one: dict, two: dict):
