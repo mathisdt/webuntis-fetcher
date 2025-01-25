@@ -53,7 +53,8 @@ whenever Untis decides to change their backend.
      switches to "student" mode. If `class` is unset, the "teacher" mode is used, and class
      names are displayed next to the period subjects.
    - `message_id_file` should point to any writable file name. It does not have
-     to exist.
+     to exist. In this file the IDs of handled messages are stored so you are not notified
+     multiple times for the same message.
    - `mail_from`, `mail_to` and `mail_host` are self-explanatory. `mail_to` can contain
      multiple addresses separated by a comma.
 3. Make sure that at least Python 3.9 and the necessary libraries are installed
