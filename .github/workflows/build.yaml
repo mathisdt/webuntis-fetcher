@@ -11,5 +11,5 @@ jobs:
     uses: mathisdt/workflows/.github/workflows/python.yaml@master
     with:
       upload-to-pypi: true
-      pypi-repository: testpypi
+      pypi-repository: pypi
     secrets: inherit
