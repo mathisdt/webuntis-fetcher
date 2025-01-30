@@ -1,12 +1,50 @@
 # WebUntis-Fetcher
 
-This project is modeled after the web application (by reverse engineering) and does
+WebUntis is a school-targeted communication platform by a company from Austria. I'm neither
+affiliated to nor paid by them, but both the school my kids attend and the school my wife teaches
+at use this platform, so I wanted to make looking at the class schedule as easy as possible.
+
+*Caution: This project is modeled after the web application (by reverse engineering) and does
 **not** use a publicly documented and stable API. So it can break at any time - 
-whenever Untis decides to change their backend.
+whenever Untis decides to change their backend.*
 
-## Getting Started
+## First main function: timetable
 
-### Installation
+This project can generate a timetable for multiple students and/or teachers in parallel,
+which then can be uploaded or directly displayed somewhere. The result is a HTML file,
+here's an example (orange = as planned, violet = changed, grey = cancelled, yellow = test):
+
+![example timetable](doc/example-timetable.png)
+
+In grey text below the tables, there are statistics about changed and cancelled lessons.
+In this example, the data collection was started in October 2024.
+
+## Second main function: messages
+
+WebUntis allows the schools to send messages to the parents. They can have attachments,
+and sometimes they have to be acknowledged. WebUntis can notify the users by email that
+they have a message, but don't send the content - for that, you have to open their mobile
+app or the web app - which can be tiresome when you have multiple accounts to check.
+
+This project can be configured to fetch the messages from any number of accounts,
+including any attachments, and send everything as email. And if a confirmation is
+required, it is given automatically when send the mail.
+
+## Installation
+
+You can choose one of these installation methods. For a later upgrade see below.
+
+### From PyPI
+
+1. Make sure that at least Python 3.9 is installed.
+2. Optionally can now set up a [venv](https://docs.python.org/3/library/venv.html) and install
+   everything inside it (recommended). For creating it, execute `python3 -m venv venv`, and
+   afterwards activate it by executing `source venv/bin/activate`. 
+   The following stays the same, you just have to remember to activate the venv before 
+   using webuntis-fetcher later.
+3. Execute `pip3 install webuntis-fetcher` to install the package including its dependencies.
+
+### Manually
 
 1. Clone [this project](https://github.com/mathisdt/webuntis-fetcher.git) to your computer,
    or download the repository content as
@@ -23,7 +61,9 @@ whenever Untis decides to change their backend.
 5. Test your installation by executing `webuntis-fetcher`. An error message should be written
    to stderr pointing out that no mode was selected.
 
-### Fetch Timetable
+## Usage
+
+### Fetch timetable
 
 To configure the mode "timetable", copy 
 [config-template.ini](https://raw.githubusercontent.com/mathisdt/webuntis-fetcher/refs/heads/master/config-template.ini)
@@ -60,7 +100,7 @@ stderr. Remember to activate the venv before (if you used one while installing).
 You also can add another argument pointing to the location of your config file
 if it's not `config.ini` in your current working directory.
 
-### Fetch Messages
+### Fetch messages
 
 To configure the mode "messages", copy 
 [config-template.ini](https://raw.githubusercontent.com/mathisdt/webuntis-fetcher/refs/heads/master/config-template.ini)
@@ -86,3 +126,14 @@ Now you can run `webuntis-fetcher messages` periodically, which will will send e
 configured. Any log messages will go to stderr. Remember to activate the venv before
 (if you used one while installing). You also can add another argument pointing to the
 location of your config file if it's not `config.ini` in your current working directory.
+
+## Upgrading
+
+Remember to activate your venv beforehand if you use one!
+
+If you chose the PyPI installation, upgrading is easy. Just execute
+`pip3 install --upgrade webuntis-fetcher` and you're done.
+
+If you installed manually and used `-e` on `pip3 install`, then it's also not hard: just
+execute `git pull`. But even if you didn't, it's not much harder: First do `git pull`
+and then another `pip3 install .`.
