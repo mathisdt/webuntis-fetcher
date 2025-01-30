@@ -1,15 +1,25 @@
 [build-system]
-requires = ["setuptools"]
+requires = [
+    "setuptools",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "webuntis-fetcher"
-version = "4"
+version = "5"
 authors = [
     { name = "Mathis Dirksen-Thedens", email = "mail@zephyrsoft.org" },
 ]
 description = "get school timetable data and messages from WebUntis"
-keywords = ["webuntis", "untis", "school", "timetable", "message", "lesson", "period"]
+keywords = [
+    "webuntis",
+    "untis",
+    "school",
+    "timetable",
+    "message",
+    "lesson",
+    "period",
+]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -17,12 +27,12 @@ classifiers = [
     "Operating System :: OS Independent",
     "Environment :: Console",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Topic :: Education"
+    "Topic :: Education",
 ]
 dependencies = [
     "requests==2.32.3",
     "beautifulsoup4==4.12.3",
-    "openpyxl==3.1.5"
+    "openpyxl==3.1.5",
 ]
 
 [project.urls]
