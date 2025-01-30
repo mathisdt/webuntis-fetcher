@@ -14,7 +14,7 @@ This project can generate a timetable for multiple students and/or teachers in p
 which then can be uploaded or directly displayed somewhere. The result is a HTML file,
 here's an example (orange = as planned, violet = changed, grey = cancelled, yellow = test):
 
-![example timetable](doc/example-timetable.png)
+![example timetable](https://raw.githubusercontent.com/mathisdt/webuntis-fetcher/refs/heads/master/doc/example-timetable.png)
 
 In grey text below the tables, there are statistics about changed and cancelled lessons.
 In this example, the data collection was started in October 2024.
@@ -23,8 +23,8 @@ In this example, the data collection was started in October 2024.
 
 WebUntis allows the schools to send messages to the parents. They can have attachments,
 and sometimes they have to be acknowledged. WebUntis can notify the users by email that
-they have a message, but don't send the content - for that, you have to open their mobile
-app or the web app - which can be tiresome when you have multiple accounts to check.
+they have a message, but doesn't send the content - for that, you have to open their mobile
+app or the web app - which can be tiresome if you have multiple accounts to check.
 
 This project can be configured to fetch the messages from any number of accounts,
 including any attachments, and send everything as email. And if a confirmation is
