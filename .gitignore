@@ -1,7 +1,9 @@
 /__pycache__/
-/venv/
-/.venv/
+/venv*/
+/.venv*/
+*.egg-info/
 config.ini
 config-messages.ini
 *~
 output.html
+*.whl

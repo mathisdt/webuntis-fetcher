@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-import configparser
 import datetime
-import locale
 import logging
-import os
 import sys
+from io import TextIOWrapper
 from typing import TextIO
 
 import requests
 from bs4 import BeautifulSoup
-from statistics import Statistics
+
+from webuntis_fetcher.statistics import Statistics
 
 
 def kks_kannover_teachers() -> dict:
@@ -380,23 +379,21 @@ def same_content(one: dict, two: dict):
             and one.get("room") == two.get("room"))
 
 
-if __name__ == '__main__':
-    locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        stream=sys.stdout)
-    outfile = f"{os.path.realpath(os.path.dirname(__file__))}/output.html"
-    if len(sys.argv) > 1:
-        outfile = sys.argv[1]
+def open_if_necessary(name, mode=None):
+    if isinstance(name, TextIO) or isinstance(name, TextIOWrapper):
+        return name
+    else:
+        return open(name, mode=mode)
+
+
+def run(config):
+    if "OUTPUT" in config and "timetable_file" in config["OUTPUT"]:
+        outfile = config["OUTPUT"]["timetable_file"]
+    else:
+        outfile = sys.stdout
     logging.debug(f'starting run - output to {outfile}')
 
-    configfile = f"{os.path.realpath(os.path.dirname(__file__))}/config.ini"
-    if not os.path.isfile(configfile):
-        logging.log(logging.ERROR, f"{configfile} not found")
-        exit(1)
-    config = configparser.ConfigParser()
-    config.read(configfile)
-
-    with open(outfile, "w") as target_file:
+    with open_if_necessary(outfile, "w") as target_file:
         write(target_file, '''<html>
                            <head>
                            <title>Stundenplan</title>
@@ -423,7 +420,7 @@ if __name__ == '__main__':
                            <body>'''
                            f'<span class="smallbold">Stand: {datetime.datetime.now().strftime("%H:%M Uhr, %d.%m.%Y")}</span><br/>')
         for section in config:
-            if section != 'DEFAULT':
+            if section not in ('DEFAULT', 'OUTPUT'):
                 today = datetime.date.today()
                 target = today + datetime.timedelta(days=2)
                 monday = target - datetime.timedelta(days=target.weekday())

@@ -1,0 +1,14 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  release:
+    uses: mathisdt/workflows/.github/workflows/python.yaml@master
+    with:
+      upload-to-pypi: true
+    secrets: inherit

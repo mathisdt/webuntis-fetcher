@@ -1,17 +1,14 @@
-import configparser
-import locale
-import logging
-import os
-import sys
 import csv
+import logging
+import mimetypes
+import os
 import smtplib
 from email.message import EmailMessage
-import mimetypes
 
 import requests
 
 
-def handle_msg(confirm: bool):
+def handle_msg(msg, confirm, already_read_messages, config, section, cookies, headers):
     if not msg["id"] in already_read_messages:
         print(f'UNREAD{" TO CONFIRM" if confirm else ""}  {msg["id"]} - {msg["subject"]}')
 
@@ -76,24 +73,9 @@ def handle_msg(confirm: bool):
         already_read_messages.append(msg["id"])
 
 
-if __name__ == '__main__':
-    locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        stream=sys.stdout)
-    if len(sys.argv) > 1:
-        configfile = sys.argv[1]
-    else:
-        configfile = f"{os.path.realpath(os.path.dirname(__file__))}/config.ini"
-    logging.debug(f'starting messages run - using configuration from {configfile}')
-
-    if not os.path.isfile(configfile):
-        logging.log(logging.ERROR, f"{configfile} not found")
-        exit(1)
-    config = configparser.ConfigParser()
-    config.read(configfile)
-
+def run(config):
     for section in config:
-        if section != 'DEFAULT':
+        if section not in ('DEFAULT', 'OUTPUT'):
             if "message_id_file" not in config[section]:
                 logging.log(logging.ERROR, f"message_id_file not configured for {section}")
                 exit(2)
@@ -124,10 +106,10 @@ if __name__ == '__main__':
 
                 if "readConfirmationMessages" in messages:
                     for msg in messages["readConfirmationMessages"]:
-                        handle_msg(True)
+                        handle_msg(msg, True, already_read_messages, config, section, cookies, headers)
                 if "incomingMessages" in messages:
                     for msg in messages["incomingMessages"]:
-                        handle_msg(False)
+                        handle_msg(msg, False, already_read_messages, config, section, cookies, headers)
 
                 with open(config[section]["message_id_file"], 'w', newline='') as message_id_file:
                     message_id_writer = csv.writer(message_id_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
