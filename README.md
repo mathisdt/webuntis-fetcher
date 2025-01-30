@@ -28,7 +28,7 @@ app or the web app - which can be tiresome when you have multiple accounts to ch
 
 This project can be configured to fetch the messages from any number of accounts,
 including any attachments, and send everything as email. And if a confirmation is
-required, it is given automatically when send the mail.
+required, it is given automatically when sending the mail.
 
 ## Installation
 
