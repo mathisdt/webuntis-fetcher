@@ -69,7 +69,7 @@ class Statistics:
             datasheet.append([timestamp, entry["planned_teacher"], entry["planned_subject"], entry["actual_teacher"],
                               entry["actual_subject"], entry["is_cancelled"], entry["comment"]])
             self.count_all += 1
-            if entry["is_cancelled"]:
+            if entry["is_cancelled"] not in (False, "=FALSE()", "=FALSE", "FALSE", "False"):
                 self.count_cancelled += 1
             else:
                 if entry["planned_teacher"] != entry["actual_teacher"]:
