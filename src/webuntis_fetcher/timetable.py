@@ -306,7 +306,8 @@ def get_data_direct(section_config, week_start_date, target):
                     if "class" in section_config:
                         group_string = ""
                         teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
-                                         f'<span class="no{" spaceleft" if "yes" in period["teacher"] and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>'
+                                         f'<span class="no{" spaceleft" if "yes" in period["teacher"] and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>' \
+                                         if "teacher" in period else ""
                     else:
                         group_string = f'<span class="spaceright">{period["group"]["yes"] if "yes" in period["group"] else ""}</span>' \
                                        f'<span class="no{" spaceleft" if "yes" in period["group"] and "no" in period["group"] else ""}">{period["group"]["no"] if "no" in period["group"] else ""}</span>'
