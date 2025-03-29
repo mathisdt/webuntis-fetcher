@@ -31,7 +31,8 @@ build-and-release-on-pypi:
                echo "on branch: $BRANCH"; \
                export MESSAGE=$(git log -1 --pretty=format:%B); \
                echo "last commit message: $MESSAGE"; \
-               if echo "$MESSAGE" | grep -iq "\[no upload to pypi\]" && [ "$BRANCH" = "master" -o "$BRANCH" = "main" ]; then \
+               export MATCH=$(echo "$MESSAGE" | grep -i "\[no upload to pypi\]"); \
+               if [ "$MATCH" = "" ] && [ "$BRANCH" = "master" -o "$BRANCH" = "main" ]; then \
                  echo "upload to PyPI" && \
                  TWINE_PASSWORD="$PYPI_TOKEN" python3 -m twine upload --repository pypi --verbose dist/* && \
                  echo "increase version number" && \
