@@ -6,6 +6,7 @@ build:
     RUN pip3 install build
     COPY src src
     COPY pyproject.toml ./
+    COPY README.md ./
     RUN python3 -m build
     SAVE ARTIFACT dist AS LOCAL dist
 
@@ -23,7 +24,6 @@ build-and-release-on-pypi:
     RUN if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given"; exit 1; fi; \
         if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given"; exit 1; fi
     COPY .git .git
-    COPY README.md ./
     COPY pyproject.toml ./
     COPY util/increase-version.py ./
     COPY +build/dist dist
@@ -39,8 +39,8 @@ build-and-release-on-pypi:
                  python3 increase-version.py && \
                  echo "commit and push increased version" && \
                  export DESTINATION_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
-                 export SHA=$(git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT) && \
-                 export CONTENT=$(base64 -i $FILE_TO_COMMIT) && \
+                 export SHA=$(git rev-parse $DESTINATION_BRANCH:pyproject.toml) && \
+                 export CONTENT=$(base64 -i pyproject.toml) && \
                  gh api --method PUT /repos/:owner/:repo/contents/pyproject.toml \
                    --field message="update version number [no upload to pypi]" \
                    --field content="$CONTENT" \
