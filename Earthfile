@@ -27,7 +27,7 @@ build-and-release-on-pypi:
     COPY +build/dist dist
     RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
                echo "on branch: $BRANCH"; \
-               if [ "$BRANCH" == "master" ] || [ "$BRANCH" == "main" ]; then \
+               if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ]; then \
                  echo "upload to PyPI" && \
                  python3 -m twine upload --repository pypi --verbose dist/* && \
                  echo "increase version number" && \
