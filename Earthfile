@@ -23,27 +23,19 @@ build-and-release-on-pypi:
     RUN if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given"; exit 1; fi; \
         if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given"; exit 1; fi
     COPY .git .git
+    COPY util/increase-version.py ./
     COPY +build/dist dist
     RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
                echo "on branch: $BRANCH"; \
                if [ "$BRANCH" == "master" -o "$BRANCH" == "main" ]; then \
-                 echo "upload to PyPI"; \
-                 python3 -m twine upload --repository pypi --verbose dist/*; \
-                 echo "increase version number"; \
-                 python3 <<EOF \
-                 import tomli, tomli_w \
-                 with open("pyproject.toml", "rb") as f: \
-                   data = tomli.load(f) \
-                 print(f'previous version: {data["project"]["version"]}') \
-                 data["project"]["version"] = str(int(data["project"]["version"])+1) \
-                 print(f'updated version:  {data["project"]["version"]}') \
-                 with open("pyproject.toml", "wb") as f: \
-                   tomli_w.dump(data, f) \
-                 EOF; \
-                 echo "commit and push increased version"; \
-                 export DESTINATION_BRANCH=$(git rev-parse --abbrev-ref HEAD); \
-                 export SHA=$(git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT); \
-                 export CONTENT=$(base64 -i $FILE_TO_COMMIT); \
+                 echo "upload to PyPI" && \
+                 python3 -m twine upload --repository pypi --verbose dist/* && \
+                 echo "increase version number" && \
+                 python3 increase-version.py && \
+                 echo "commit and push increased version" && \
+                 export DESTINATION_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
+                 export SHA=$(git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT) && \
+                 export CONTENT=$(base64 -i $FILE_TO_COMMIT) && \
                  gh api --method PUT /repos/:owner/:repo/contents/pyproject.toml \
                    --field message="update version number [skip actions]" \
                    --field content="$CONTENT" \
