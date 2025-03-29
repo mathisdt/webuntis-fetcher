@@ -29,7 +29,7 @@ build-and-release-on-pypi:
                echo "on branch: $BRANCH"; \
                if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ]; then \
                  echo "upload to PyPI" && \
-                 python3 -m twine upload --repository pypi --verbose dist/* && \
+                 TWINE_PASSWORD="$PYPI_TOKEN" python3 -m twine upload --repository pypi --verbose dist/* && \
                  echo "increase version number" && \
                  python3 increase-version.py && \
                  echo "commit and push increased version" && \
