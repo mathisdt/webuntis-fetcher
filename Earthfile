@@ -23,6 +23,7 @@ build-and-release-on-pypi:
     RUN if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given"; exit 1; fi; \
         if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given"; exit 1; fi
     COPY .git .git
+    COPY pyproject.toml ./
     COPY util/increase-version.py ./
     COPY +build/dist dist
     RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
