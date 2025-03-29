@@ -23,12 +23,14 @@ build-and-release-on-pypi:
     RUN if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given"; exit 1; fi; \
         if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given"; exit 1; fi
     COPY .git .git
+    COPY README.md ./
     COPY pyproject.toml ./
     COPY util/increase-version.py ./
     COPY +build/dist dist
     RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
                echo "on branch: $BRANCH"; \
-               if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ]; then \
+               export MESSAGE=$(git log -1 --pretty=format:%B)
+               if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ] && [[ $MESSAGE != *"[no upload to pypi]"* ]]; then \
                  echo "upload to PyPI" && \
                  TWINE_PASSWORD="$PYPI_TOKEN" python3 -m twine upload --repository pypi --verbose dist/* && \
                  echo "increase version number" && \
@@ -38,7 +40,7 @@ build-and-release-on-pypi:
                  export SHA=$(git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT) && \
                  export CONTENT=$(base64 -i $FILE_TO_COMMIT) && \
                  gh api --method PUT /repos/:owner/:repo/contents/pyproject.toml \
-                   --field message="update version number [skip actions]" \
+                   --field message="update version number [no upload to pypi]" \
                    --field content="$CONTENT" \
                    --field encoding="base64" \
                    --field branch="$DESTINATION_BRANCH" \
