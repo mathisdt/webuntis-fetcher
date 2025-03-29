@@ -30,7 +30,7 @@ build-and-release-on-pypi:
     RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
                echo "on branch: $BRANCH"; \
                export MESSAGE=$(git log -1 --pretty=format:%B)
-               if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ] && [[ $MESSAGE != *"[no upload to pypi]"* ]]; then \
+               if [ "$BRANCH" = "master" -o "$BRANCH" = "main" ] && [[ "$MESSAGE" != *"[no upload to pypi]"* ]]; then \
                  echo "upload to PyPI" && \
                  TWINE_PASSWORD="$PYPI_TOKEN" python3 -m twine upload --repository pypi --verbose dist/* && \
                  echo "increase version number" && \
