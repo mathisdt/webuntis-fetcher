@@ -1,15 +1,12 @@
-name: Build
+name: build
+run-name: build commit with earthly
 
 on:
   push:
     branches:
-      - master
-      - main
+      - "**"
 
 jobs:
   release:
-    uses: mathisdt/workflows/.github/workflows/python.yaml@master
-    with:
-      upload-to-pypi: true
-      pypi-repository: pypi
+    uses: mathisdt/workflows/.github/workflows/earthly.yaml@master
     secrets: inherit
