@@ -46,7 +46,9 @@ build-and-release-on-pypi:
                    --field content="$CONTENT" \
                    --field encoding="base64" \
                    --field branch="$DESTINATION_BRANCH" \
-                   --field sha="$SHA"; \
+                   --field sha="$SHA" && \
+                 echo "running the mirror workflow manually because changes from inside a workflow don't trigger it" && \
+                 gh workflow run mirror.yaml --ref $BRANCH; \
                else \
                  echo "not uploading to PyPI"; \
                fi
