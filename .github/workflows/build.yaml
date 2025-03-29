@@ -2,9 +2,7 @@ name: build
 run-name: build commit with earthly
 
 on:
-  push:
-    branches:
-      - "**"
+  push
 
 jobs:
   release:
