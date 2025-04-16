@@ -11,8 +11,8 @@ build:
     SAVE ARTIFACT dist AS LOCAL dist
 
 build-and-release-on-pypi:
-    ARG --required PYPI_TOKEN
-    ARG --required GITHUB_TOKEN
+    ARG GITHUB_TOKEN
+    ARG PYPI_TOKEN
     BUILD +build
     FROM python:3.13-slim-bookworm
     WORKDIR /project
@@ -21,13 +21,13 @@ build-and-release-on-pypi:
     RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
     RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
     RUN apt-get update >/dev/null 2>&1 && apt-get -y install gh >/dev/null 2>&1
-    RUN if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given"; exit 1; fi; \
-        if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given"; exit 1; fi
     COPY .git .git
     COPY pyproject.toml ./
     COPY util/increase-version.py ./
     COPY +build/dist dist
-    RUN --push export BRANCH=$(git symbolic-ref --short HEAD); \
+    RUN --push if [ -z "$PYPI_TOKEN" ]; then echo "no PyPI token given, not uploading to PyPI"; exit 0; fi; \
+               if [ -z "$GITHUB_TOKEN" ]; then echo "no Github token given, not uploading to PyPI"; exit 0; fi; \
+               export BRANCH=$(git symbolic-ref --short HEAD); \
                echo "on branch: $BRANCH"; \
                export MESSAGE=$(git log -1 --pretty=format:%B); \
                echo "last commit message: $MESSAGE"; \
