@@ -75,9 +75,9 @@ def add_entry(data_dict: dict, category: str, kind: str, element: str):
         return
     if category not in data_dict:
         data_dict[category] = dict()
-    if kind in data_dict[category]:
+    if kind in data_dict[category] and element not in data_dict[category][kind]:
         data_dict[category][kind] = data_dict[category][kind] + ", " + element
-    else:
+    elif kind not in data_dict[category]:
         data_dict[category][kind] = element
 
 
@@ -305,7 +305,7 @@ def get_data_direct(section_config, week_start_date, target):
                     if "class" in section_config:
                         group_string = ""
                         teacher_string = f'<span class="spaceleft">{period["teacher"]["yes"] if "yes" in period["teacher"] else ""}</span>' \
-                                         f'<span class="no{" spaceleft" if "yes" in period["teacher"] and "no" in period["teacher"] else ""}">{period["teacher"]["no"] if "no" in period["teacher"] else ""}</span>' \
+                                         f'<span class="no{" spaceleft" if "yes" in period["teacher"] and "no" in period["teacher"] and ("yes" not in period["teacher"] or period["teacher"]["no"] != period["teacher"]["yes"]) else ""}">{period["teacher"]["no"] if "no" in period["teacher"] and ("yes" not in period["teacher"] or period["teacher"]["no"] != period["teacher"]["yes"]) else ""}</span>' \
                                          if "teacher" in period else ""
                     else:
                         group_string = f'<span class="spaceright">{period["group"]["yes"] if "yes" in period["group"] else ""}</span>' \
