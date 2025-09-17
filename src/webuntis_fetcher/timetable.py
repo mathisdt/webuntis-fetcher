@@ -175,9 +175,8 @@ def get_data_direct(section_config, week_start_date, target):
             periods_by_time[start_time][date]["cell_class"] = "change"
         elif period["cellState"] in ("CANCEL", "FREE"):
             kind = "no"
-            if ("cell_class" not in periods_by_time[start_time][date]
-                    or not periods_by_time[start_time][date]["cell_class"] == "change"):
-                # we don't already have a "change" entry, so we may put "cancel" as cell class:
+            if "cell_class" not in periods_by_time[start_time][date]:
+                # we don't already have another entry, so we may put "cancel" as cell class:
                 periods_by_time[start_time][date]["cell_class"] = "cancel"
         elif period["cellState"] == "STANDARD":
             # only if we don't have a cell class already (parallel entries: non-standard takes precendence)
