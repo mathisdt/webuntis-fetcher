@@ -317,7 +317,7 @@ def get_data_direct(section_config, week_start_date, target):
                           f'<span class="no{" spaceleft" if "subject" in period and "yes" in period["subject"] and "no" in period["subject"] else ""}">{period["subject"]["no"] if "subject" in period and "no" in period["subject"] else ""}</span>'
                           f'{teacher_string}<br/>'
                           f'<small>@ {period["room"]["yes"] if "room" in period and "yes" in period["room"] else ""}'
-                          f'<span class="no{" spaceleft" if "room" in period and "yes" in period["room"] and "no" in period["room"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] else ""}</span></small>'
+                          f'<span class="no{" spaceleft" if "room" in period and "yes" in period["room"] and "no" in period["room"] and period["room"]["no"] != period["room"]["yes"] else ""}">{period["room"]["no"] if "room" in period and "no" in period["room"] and ("yes" not in period["room"] or period["room"]["no"] != period["room"]["yes"]) else ""}</span></small>'
                           f'{"<br/>" + period["infotext"].strip() if "infotext" in period and len(period["infotext"]) else ""}</td>')
                 if statistics:
                     planned_teacher = None
