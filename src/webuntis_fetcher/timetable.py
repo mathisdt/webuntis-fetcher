@@ -88,20 +88,33 @@ def get_data_direct(section_config, week_start_date, target):
                                 f'{section_config["firstname"]} {section_config["lastname"]} - {section_config["class"]}')
         statistics.open()
     response_initial = requests.get(f'{section_config["server"]}/WebUntis/?school={section_config["school"]}')
+    if response_initial.status_code != 200:
+        exit(20)
     cookies = response_initial.cookies
-    requests.post(f'{section_config["server"]}/WebUntis/j_spring_security_check', cookies=cookies,
+    spring_security_response = requests.post(f'{section_config["server"]}/WebUntis/j_spring_security_check', cookies=cookies,
                   params={"school": section_config["school"],
                           "j_username": section_config["username"],
                           "j_password": section_config["password"],
                           "token": ""})
+    if spring_security_response.status_code != 200:
+        exit(21)
+    token_response = requests.get(f'{section_config["server"]}/WebUntis/api/token/new', cookies=cookies)
+    if token_response.status_code != 200:
+        exit(22)
+    headers = {"Authorization": f"Bearer {token_response.text}"}
+
     if "class" in section_config:
         response_pageconfig = requests.get(
             f'{section_config["server"]}/WebUntis/api/public/timetable/weekly/pageconfig'
-            f'?type=5&date={week_start_date}&isMyTimetableSelected=false', cookies=cookies)
+            f'?type=5&date={week_start_date}&isMyTimetableSelected=false', cookies=cookies,
+            headers=headers)
     else:
         response_pageconfig = requests.get(
             f'{section_config["server"]}/WebUntis/api/public/timetable/weekly/pageconfig'
-            f'?type=2&date={week_start_date}&isMyTimetableSelected=true', cookies=cookies)
+            f'?type=2&date={week_start_date}&isMyTimetableSelected=true', cookies=cookies,
+            headers=headers)
+    if response_pageconfig.status_code != 200:
+        exit(23)
     pageconfig = response_pageconfig.json()
     person_id = None
     for person in pageconfig["data"]["elements"]:
@@ -111,11 +124,13 @@ def get_data_direct(section_config, week_start_date, target):
     if "class" in section_config:
         response_week_data = requests.get(f'{section_config["server"]}/WebUntis/api/public/timetable/weekly/data'
                                           f'?elementType=5&elementId={person_id}&date={week_start_date}&formatId=1',
-                                          cookies=cookies)
+                                          cookies=cookies, headers=headers)
     else:
         response_week_data = requests.get(f'{section_config["server"]}/WebUntis/api/public/timetable/weekly/data'
                                           f'?elementType=2&elementId={person_id}&date={week_start_date}&formatId=9',
-                                          cookies=cookies)
+                                          cookies=cookies, headers=headers)
+    if response_week_data.status_code != 200:
+        exit(24)
     week_data = response_week_data.json()
 
     if "data" not in week_data or "result" not in week_data["data"]:
@@ -125,8 +140,10 @@ def get_data_direct(section_config, week_start_date, target):
     periods_by_time = dict()
 
     if "class" in section_config:
-        response_timegrid = requests.get(
-            f'{section_config["server"]}/WebUntis/api/public/timegrid', cookies=cookies)
+        response_timegrid = requests.get(f'{section_config["server"]}/WebUntis/api/public/timegrid',
+                                         cookies=cookies, headers=headers)
+        if response_timegrid.status_code != 200:
+            exit(25)
         timegrid = response_timegrid.json()
 
         for row in timegrid["data"]["rows"]:
