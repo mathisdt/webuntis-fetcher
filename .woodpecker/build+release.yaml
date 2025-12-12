@@ -23,27 +23,21 @@ steps:
     commands: |
       git remote add github https://mathisdt:$TOKEN_GITHUB@github.com/mathisdt/$CI_REPO_NAME.git
       git push github
-  - name: build
-    when:
-      - event: [ push, manual ]
-    depends_on: []
-    image: python:3.14-slim-trixie
-    pull: true
-    commands: |
-      export TZ=Europe/Berlin
-      pip3 install twine tomli tomli-w
   - name: pypi-release
     when:
       - event: manual
         branch: [ master, main ]
-    depends_on: [ build ]
+    depends_on: []
     image: python:3.14-slim-trixie
     pull: true
     environment:
       PYPI_TOKEN:
         from_secret: PYPI_TOKEN
     commands: |
+      python3 -m venv venv
+      . venv/bin/activate
       export TZ=Europe/Berlin
+      pip3 install twine tomli tomli-w
       if [ -z "$PYPI_TOKEN" ]; then
         echo "no PyPI token given, not uploading to PyPI"
         exit 1
@@ -69,6 +63,8 @@ steps:
       TOKEN_REPO_READWRITE:
         from_secret: TOKEN_REPO_READWRITE
     commands: |
+      . venv/bin/activate
+      export TZ=Europe/Berlin
       echo "increase version number"
       python3 increase-version.py
       echo "commit and push increased version"
