@@ -1,4 +1,4 @@
-# this script is used in the build process, see Earthfile
+# this script is used in the pipeline build
 
 import tomli, tomli_w
 

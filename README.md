@@ -61,15 +61,6 @@ You can choose one of these installation methods. For a later upgrade see below.
 5. Test your installation by executing `webuntis-fetcher`. An error message should be written
    to stderr pointing out that no mode was selected.
 
-### Using Earthly
-
-The CI build of this project uses [Earthly](https://docs.earthly.dev/), which in turn uses
-container virtualization (e.g. Docker or Podman). You can also run the build locally (if you
-have Earthly as well as an OCI compatible container engine installed) by executing
-`earthly +build`. This will create a container with everything needed for the build,
-create the package inside it and then copy the results to the directory `dist` for you.
-
-
 ## Usage
 
 ### Fetch timetable
@@ -146,3 +137,8 @@ If you chose the PyPI installation, upgrading is easy. Just execute
 If you installed manually and used `-e` on `pip3 install`, then it's also not hard: just
 execute `git pull`. But even if you didn't, it's not much harder: First do `git pull`
 and then another `pip3 install .`.
+
+# License
+
+This project is licensed under GPL v3. If you submit or contribute changes, these are automatically licensed
+under GPL v3 as well. If you don't want that, please don't submit the contribution (e.g. pull request)!
