@@ -23,18 +23,29 @@ steps:
     commands: |
       git remote add github https://mathisdt:$TOKEN_GITHUB@github.com/mathisdt/$CI_REPO_NAME.git
       git push github
+  - name: build
+    when:
+      - event: [ push, manual ]
+        branch: [ master, main ]
+    depends_on: []
+    image: python:3.14-slim-trixie
+    pull: true
+    commands: |
+      python3 -m venv venv
+      . venv/bin/activate
+      pip3 install build
+      python3 -m build
   - name: pypi-release
     when:
       - event: manual
         branch: [ master, main ]
-    depends_on: []
+    depends_on: [ build ]
     image: python:3.14-slim-trixie
     pull: true
     environment:
       PYPI_TOKEN:
         from_secret: PYPI_TOKEN
     commands: |
-      python3 -m venv venv
       . venv/bin/activate
       export TZ=Europe/Berlin
       pip3 install twine tomli tomli-w
