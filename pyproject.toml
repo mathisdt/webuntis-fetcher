@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "webuntis-fetcher"
-version = "21"
+version = "22"
 authors = [
     { name = "Mathis Dirksen-Thedens", email = "mail@zephyrsoft.org" },
 ]
