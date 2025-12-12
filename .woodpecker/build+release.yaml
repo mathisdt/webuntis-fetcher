@@ -77,9 +77,9 @@ steps:
       . venv/bin/activate
       export TZ=Europe/Berlin
       echo "increase version number"
-      python3 increase-version.py
+      python3 util/increase-version.py
       echo "commit and push increased version"
-      git config --global user.name "Woodpacker Pipeline"
+      git config --global user.name "Woodpecker Pipeline"
       git config --global user.email "nonexistant@example.com"
       git add pyproject.toml
       git commit -m "increase version number"
