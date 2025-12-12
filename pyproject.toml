@@ -10,6 +10,7 @@ version = "19"
 authors = [
     { name = "Mathis Dirksen-Thedens", email = "mail@zephyrsoft.org" },
 ]
+license = "GPL-3.0-only"
 description = "get school timetable data and messages from WebUntis"
 keywords = [
     "webuntis",
@@ -26,7 +27,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
     "Environment :: Console",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Topic :: Education",
 ]
 dependencies = [
