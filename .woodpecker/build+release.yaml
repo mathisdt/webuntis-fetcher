@@ -70,15 +70,23 @@ steps:
     depends_on: [ pypi-release ]
     image: python:3.14-slim-trixie
     pull: true
-    environment:
-      TOKEN_REPO_READWRITE:
-        from_secret: TOKEN_REPO_READWRITE
     commands: |
       . venv/bin/activate
       export TZ=Europe/Berlin
       echo "increase version number"
       python3 util/increase-version.py
-      echo "commit and push increased version"
+  - name: commit-and-push
+    when:
+      - event: manual
+        branch: [ master, main ]
+    depends_on: [ increase-version ]
+    image: alpine/git:latest
+    pull: true
+    environment:
+      TOKEN_REPO_READWRITE:
+        from_secret: TOKEN_REPO_READWRITE
+    commands: |
+      export TZ=Europe/Berlin
       git config --global user.name "Woodpecker Pipeline"
       git config --global user.email "nonexistant@example.com"
       git add pyproject.toml
